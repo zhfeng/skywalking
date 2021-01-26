@@ -19,7 +19,11 @@
 package org.apache.skywalking.oap.server.core.query.type.event;
 
 import lombok.Data;
-import org.apache.skywalking.oap.server.core.query.type.TimeRange;
+import org.apache.skywalking.oap.server.core.query.enumeration.Order;
+import org.apache.skywalking.oap.server.core.query.input.Duration;
+
+import static org.apache.skywalking.oap.server.core.storage.query.IEventQueryDAO.DEFAULT_SIZE;
+import static org.apache.skywalking.oap.server.core.storage.query.IEventQueryDAO.MAX_SIZE;
 
 @Data
 public class EventQueryCondition {
@@ -31,9 +35,13 @@ public class EventQueryCondition {
 
     private Type type;
 
-    private TimeRange startTime;
+    private Duration time;
 
-    private TimeRange endTime;
+    private Order order;
 
     private int size;
+
+    public int getSize() {
+        return size > 0 ? Math.min(size, MAX_SIZE) : DEFAULT_SIZE;
+    }
 }

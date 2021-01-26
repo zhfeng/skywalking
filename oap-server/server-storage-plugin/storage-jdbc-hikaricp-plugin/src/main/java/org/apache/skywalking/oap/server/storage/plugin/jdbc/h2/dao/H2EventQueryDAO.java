@@ -20,13 +20,14 @@ package org.apache.skywalking.oap.server.storage.plugin.jdbc.h2.dao;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.skywalking.oap.server.core.event.EventRecord;
-import org.apache.skywalking.oap.server.core.query.type.TimeRange;
+import org.apache.skywalking.oap.server.core.query.input.Duration;
 import org.apache.skywalking.oap.server.core.query.type.event.Event;
 import org.apache.skywalking.oap.server.core.query.type.event.EventQueryCondition;
 import org.apache.skywalking.oap.server.core.query.type.event.Events;
@@ -44,8 +45,8 @@ public class H2EventQueryDAO implements IEventQueryDAO {
 
     @Override
     public Events queryEvents(final EventQueryCondition condition) throws Exception {
-        List<String> conditions = new ArrayList<>();
-        List<Object> parameters = new ArrayList<>();
+        final List<String> conditions = new ArrayList<>();
+        final List<Object> parameters = new ArrayList<>();
 
         if (!isNullOrEmpty(condition.getUuid())) {
             conditions.add(EventRecord.UUID + "=?");
@@ -78,27 +79,15 @@ public class H2EventQueryDAO implements IEventQueryDAO {
             parameters.add(condition.getType().name());
         }
 
-        final TimeRange startTime = condition.getStartTime();
-        if (startTime != null) {
-            if (startTime.getStart() != null && startTime.getStart() > 0) {
+        final Duration time = condition.getTime();
+        if (time != null) {
+            if (time.getStartTimestamp() > 0) {
                 conditions.add(EventRecord.START_TIME + ">?");
-                parameters.add(startTime.getStart());
+                parameters.add(time.getStartTimestamp());
             }
-            if (startTime.getEnd() != null && startTime.getEnd() > 0) {
-                conditions.add(EventRecord.START_TIME + "<?");
-                parameters.add(startTime.getEnd());
-            }
-        }
-
-        final TimeRange endTime = condition.getEndTime();
-        if (endTime != null) {
-            if (endTime.getStart() != null && endTime.getStart() > 0) {
-                conditions.add(EventRecord.END_TIME + ">?");
-                parameters.add(endTime.getStart());
-            }
-            if (endTime.getEnd() != null && endTime.getEnd() > 0) {
+            if (time.getEndTimestamp() > 0) {
                 conditions.add(EventRecord.END_TIME + "<?");
-                parameters.add(endTime.getEnd());
+                parameters.add(time.getEndTimestamp());
             }
         }
 
@@ -107,7 +96,7 @@ public class H2EventQueryDAO implements IEventQueryDAO {
         final Events result = new Events();
 
         try (final Connection connection = client.getConnection()) {
-            String sql = "select count(1) total from (select 1 from " + EventRecord.INDEX_NAME + whereClause + " )";
+            String sql = "select count(1) total from " + EventRecord.INDEX_NAME + whereClause;
             if (log.isDebugEnabled()) {
                 log.debug("Count SQL: {}, parameters: {}", sql, parameters);
             }
@@ -118,39 +107,37 @@ public class H2EventQueryDAO implements IEventQueryDAO {
                 result.setTotal(resultSet.getInt("total"));
             }
 
-            int limit = DEFAULT_SIZE;
-            if (condition.getSize() > 0) {
-                limit = condition.getSize();
-            }
-            limit = Math.min(MAX_SIZE, limit);
-
-            sql = "select * from " + EventRecord.INDEX_NAME + whereClause + " limit " + limit;
+            sql = "select * from " + EventRecord.INDEX_NAME + whereClause + " limit " + condition.getSize();
             if (log.isDebugEnabled()) {
                 log.debug("Query SQL: {}, parameters: {}", sql, parameters);
             }
             try (final ResultSet resultSet = client.executeQuery(connection, sql, parameters.toArray())) {
                 while (resultSet.next()) {
-                    final Event event = new Event();
-
-                    event.setUuid(resultSet.getString(EventRecord.UUID));
-
-                    final String service = resultSet.getString(EventRecord.SERVICE);
-                    final String serviceInstance = resultSet.getString(EventRecord.SERVICE_INSTANCE);
-                    final String endpoint = resultSet.getString(EventRecord.ENDPOINT);
-
-                    event.setSource(new Source(service, serviceInstance, endpoint));
-                    event.setName(resultSet.getString(EventRecord.NAME));
-                    event.setType(Type.parse(resultSet.getString(EventRecord.TYPE)));
-                    event.setMessage(resultSet.getString(EventRecord.MESSAGE));
-                    event.setParameters(resultSet.getString(EventRecord.PARAMETERS));
-                    event.setStartTime(resultSet.getLong(EventRecord.START_TIME));
-                    event.setEndTime(resultSet.getLong(EventRecord.END_TIME));
-
-                    result.getEvents().add(event);
+                    result.getEvents().add(parseResultSet(resultSet));
                 }
             }
         }
 
         return result;
+    }
+
+    protected Event parseResultSet(final ResultSet resultSet) throws SQLException {
+        final Event event = new Event();
+
+        event.setUuid(resultSet.getString(EventRecord.UUID));
+
+        final String service = resultSet.getString(EventRecord.SERVICE);
+        final String serviceInstance = resultSet.getString(EventRecord.SERVICE_INSTANCE);
+        final String endpoint = resultSet.getString(EventRecord.ENDPOINT);
+
+        event.setSource(new Source(service, serviceInstance, endpoint));
+        event.setName(resultSet.getString(EventRecord.NAME));
+        event.setType(Type.parse(resultSet.getString(EventRecord.TYPE)));
+        event.setMessage(resultSet.getString(EventRecord.MESSAGE));
+        event.setParameters(resultSet.getString(EventRecord.PARAMETERS));
+        event.setStartTime(resultSet.getLong(EventRecord.START_TIME));
+        event.setEndTime(resultSet.getLong(EventRecord.END_TIME));
+
+        return event;
     }
 }
