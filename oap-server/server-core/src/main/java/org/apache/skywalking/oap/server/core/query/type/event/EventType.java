@@ -21,11 +21,11 @@ package org.apache.skywalking.oap.server.core.query.type.event;
 import com.google.common.base.Strings;
 import java.util.Objects;
 
-public enum Type {
+public enum EventType {
     Normal, Error;
 
-    public static Type parse(final String raw) {
-        for (final Type value : Type.values()) {
+    public static EventType parse(final String raw) {
+        for (final EventType value : EventType.values()) {
             if (Objects.equals(value.name().toLowerCase(), Strings.nullToEmpty(raw).toLowerCase())) {
                 return value;
             }

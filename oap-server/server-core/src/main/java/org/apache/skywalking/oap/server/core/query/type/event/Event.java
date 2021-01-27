@@ -18,23 +18,45 @@
 
 package org.apache.skywalking.oap.server.core.query.type.event;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.Data;
+import org.apache.skywalking.apm.util.StringUtil;
+import org.apache.skywalking.oap.server.core.query.type.KeyValue;
 
 @Data
 public class Event {
+    private static final Gson GSON = new Gson();
+
     String uuid;
 
     Source source;
 
     String name;
 
-    Type type;
+    EventType type;
 
     String message;
 
-    String parameters;
+    List<KeyValue> parameters;
 
     long startTime;
 
     long endTime;
+
+    public void setParameters(final List<KeyValue> parameters) {
+        this.parameters = parameters;
+    }
+
+    public void setParameters(final String json) {
+        if (StringUtil.isNotEmpty(json)) {
+            final Map<String, String> map = GSON.fromJson(json, new TypeToken<Map<String, String>>() {
+            }.getType());
+            this.parameters = map.entrySet().stream().map(e -> new KeyValue(e.getKey(), e.getValue())).collect(Collectors.toList());
+        }
+    }
+
 }

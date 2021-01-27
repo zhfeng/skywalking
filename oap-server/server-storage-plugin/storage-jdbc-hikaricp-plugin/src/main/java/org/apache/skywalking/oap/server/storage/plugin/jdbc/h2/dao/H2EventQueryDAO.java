@@ -32,7 +32,7 @@ import org.apache.skywalking.oap.server.core.query.type.event.Event;
 import org.apache.skywalking.oap.server.core.query.type.event.EventQueryCondition;
 import org.apache.skywalking.oap.server.core.query.type.event.Events;
 import org.apache.skywalking.oap.server.core.query.type.event.Source;
-import org.apache.skywalking.oap.server.core.query.type.event.Type;
+import org.apache.skywalking.oap.server.core.query.type.event.EventType;
 import org.apache.skywalking.oap.server.core.storage.query.IEventQueryDAO;
 import org.apache.skywalking.oap.server.library.client.jdbc.hikaricp.JDBCHikariCPClient;
 
@@ -132,7 +132,7 @@ public class H2EventQueryDAO implements IEventQueryDAO {
 
         event.setSource(new Source(service, serviceInstance, endpoint));
         event.setName(resultSet.getString(EventRecord.NAME));
-        event.setType(Type.parse(resultSet.getString(EventRecord.TYPE)));
+        event.setType(EventType.parse(resultSet.getString(EventRecord.TYPE)));
         event.setMessage(resultSet.getString(EventRecord.MESSAGE));
         event.setParameters(resultSet.getString(EventRecord.PARAMETERS));
         event.setStartTime(resultSet.getLong(EventRecord.START_TIME));

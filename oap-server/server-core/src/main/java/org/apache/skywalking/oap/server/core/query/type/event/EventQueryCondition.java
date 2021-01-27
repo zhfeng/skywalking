@@ -33,7 +33,7 @@ public class EventQueryCondition {
 
     private String name;
 
-    private Type type;
+    private EventType type;
 
     private Duration time;
 

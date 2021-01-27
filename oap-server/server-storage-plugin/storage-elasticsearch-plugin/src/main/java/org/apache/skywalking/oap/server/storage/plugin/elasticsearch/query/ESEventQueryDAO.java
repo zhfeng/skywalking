@@ -27,9 +27,9 @@ import org.apache.skywalking.oap.server.core.query.enumeration.Order;
 import org.apache.skywalking.oap.server.core.query.input.Duration;
 import org.apache.skywalking.oap.server.core.query.type.event.Event;
 import org.apache.skywalking.oap.server.core.query.type.event.EventQueryCondition;
+import org.apache.skywalking.oap.server.core.query.type.event.EventType;
 import org.apache.skywalking.oap.server.core.query.type.event.Events;
 import org.apache.skywalking.oap.server.core.query.type.event.Source;
-import org.apache.skywalking.oap.server.core.query.type.event.Type;
 import org.apache.skywalking.oap.server.core.storage.query.IEventQueryDAO;
 import org.apache.skywalking.oap.server.library.client.elasticsearch.ElasticSearchClient;
 import org.apache.skywalking.oap.server.storage.plugin.elasticsearch.base.EsDAO;
@@ -127,7 +127,7 @@ public class ESEventQueryDAO extends EsDAO implements IEventQueryDAO {
         event.setSource(new Source(service, serviceInstance, endpoint));
 
         event.setName((String) searchHit.getSourceAsMap().get(EventRecord.NAME));
-        event.setType(Type.parse(searchHit.getSourceAsMap().get(EventRecord.TYPE).toString()));
+        event.setType(EventType.parse(searchHit.getSourceAsMap().get(EventRecord.TYPE).toString()));
         event.setMessage((String) searchHit.getSourceAsMap().get(EventRecord.MESSAGE));
         event.setParameters((String) searchHit.getSourceAsMap().get(EventRecord.PARAMETERS));
         event.setStartTime(Long.parseLong(searchHit.getSourceAsMap().get(EventRecord.START_TIME).toString()));

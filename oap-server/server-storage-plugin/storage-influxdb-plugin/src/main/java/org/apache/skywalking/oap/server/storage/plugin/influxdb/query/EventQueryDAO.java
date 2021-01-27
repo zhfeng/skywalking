@@ -31,7 +31,7 @@ import org.apache.skywalking.oap.server.core.query.type.event.Event;
 import org.apache.skywalking.oap.server.core.query.type.event.EventQueryCondition;
 import org.apache.skywalking.oap.server.core.query.type.event.Events;
 import org.apache.skywalking.oap.server.core.query.type.event.Source;
-import org.apache.skywalking.oap.server.core.query.type.event.Type;
+import org.apache.skywalking.oap.server.core.query.type.event.EventType;
 import org.apache.skywalking.oap.server.core.storage.query.IEventQueryDAO;
 import org.apache.skywalking.oap.server.core.storage.type.StorageDataComplexObject;
 import org.apache.skywalking.oap.server.storage.plugin.influxdb.InfluxClient;
@@ -108,7 +108,7 @@ public class EventQueryDAO implements IEventQueryDAO {
 
         event.setSource(new Source(service, serviceInstance, endpoint));
         event.setName((String) data.get(EventRecord.NAME));
-        event.setType((Type.parse((String) data.get(EventRecord.TYPE))));
+        event.setType(EventType.parse((String) data.get(EventRecord.TYPE)));
         event.setMessage((String) data.get(EventRecord.MESSAGE));
         event.setParameters((String) data.get(EventRecord.PARAMETERS));
 
