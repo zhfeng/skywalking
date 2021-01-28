@@ -25,7 +25,6 @@
                 endpointId,
                 traceId,
                 timestamp,
-                isError,
                 contentType,
                 content,
                 tags{
@@ -36,7 +35,6 @@
     }",
     "variables": {
         "condition": {
-            "state": "{state}",
             "serviceId": "{serviceId}",
             "endpointId": "{endpointId}",
             "endpointName": "{endpointName}",

@@ -21,7 +21,6 @@ import org.apache.skywalking.e2e.AbstractQuery;
 
 public class LogsQuery extends AbstractQuery<LogsQuery> {
 
-    private String state = "ALL";
     private String serviceId;
     private String endpointId = "";
     private String endpointName = "";
@@ -32,15 +31,6 @@ public class LogsQuery extends AbstractQuery<LogsQuery> {
     private String needTotal = "true";
     private String keywordsOfContent = "";
     private String excludingKeywordsOfContent = "";
-
-    public String state() {
-        return state;
-    }
-
-    public LogsQuery state(String state) {
-        this.state = state;
-        return this;
-    }
 
     public String serviceId() {
         return serviceId;
